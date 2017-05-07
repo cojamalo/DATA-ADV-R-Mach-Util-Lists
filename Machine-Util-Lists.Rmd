@@ -1,0 +1,84 @@
+---
+title: "Machine Utilization- Advanced R Practice"
+output:
+  html_document: default
+  html_notebook: default
+---
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align='center', fig.width=6)
+```
+### Submission by Connor Lenio. Email: cojamalo@gmail.com
+Completion Date: May 7, 2017
+
+## Assignment
+You have been engaged as a Data Science consultant by a coal terminal. They would
+like you to investigate one of their heavy machines - RL1
+
+You have been supplied one month worth of data for all of their machines. The
+dataset shows what percentage of capacity for each machine was idle (unused) in any
+given hour. You are required to deliver an R list with the following components:
+
+* Character: Machine name
+* Vector: (min, mean, max) utilisation for the month (excluding unknown hours)
+* Logical: Has utilisation ever fallen below 90%? TRUE / FALSE
+* Vector: All hours where utilisation is unknown (NA’s)
+* Dataframe: For this machine
+* Plot: For all machines
+
+## Data
+
+Import the needed packages:
+```{r, message=FALSE, warning=FALSE}
+library(data.table)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+```
+<br>
+
+Read the data into R using fread:
+```{r}
+all_data <- fread("Machine-Utilization.csv", na.strings = "", showProgress = FALSE) %>% tbl_df
+```
+<br>
+
+### Data Cleaning
+Convert `Timestamp` to date time, factor `Machine`, calculate `Utilization` using `Percent Idle`, and create the `Hour` variable for all timestamps: 
+```{r}
+all_data$Timestamp <- dmy_hm(all_data$Timestamp)
+all_data$Machine <- factor(all_data$Machine)
+all_data$Utilization <- 1-all_data$`Percent Idle`
+all_data <- all_data %>% mutate(Hour = hour(Timestamp))
+```
+<br>
+
+### Construct the List
+
+The list is constructed using a simple "for" loop that calculates the desired statistics for each machine in the data. The result is `final_list`:
+```{r}
+six <- ggplot(all_data, aes(x=Timestamp, y = Utilization, color = Machine)) + geom_line() + facet_grid(Machine~.)
+final_list <- NULL
+i <- 1
+for (machine in levels(all_data$Machine)) {
+    mach_data <- all_data %>% filter(Machine == machine)
+    downhr <- mach_data %>% filter(is.na(Utilization))
+    downhr <- downhr$Timestamp
+    new_row <- list(Machine = machine, Min_Util = min(mach_data$Utilization, na.rm= TRUE), Mean_Util = mean(mach_data$Utilization, na.rm= TRUE), Max_Util = max(mach_data$Utilization, na.rm = TRUE), Util_Below_90 = ifelse(min(mach_data$Utilization, na.rm= TRUE) < 0.9, TRUE, FALSE),Down_Hours = downhr, Data = mach_data, Plot = six)
+    final_list[[i]] <- new_row
+    i <- i + 1
+}
+names(final_list) <- levels(all_data$Machine)
+```
+<br>
+
+The top level of structure of `final_list` is a list of five sublists, one for each machine:
+```{r}
+summary(final_list)
+```
+<br>
+
+The following is an example of one of these five sublists, shwoing the desired information and plots:
+```{r, message=FALSE, warning=FALSE}
+final_list$RL1
+```
+
