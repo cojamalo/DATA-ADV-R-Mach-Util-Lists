@@ -4,7 +4,7 @@ R Skills Exercise from Udemy's R Programming: Advanced Analytics in R for Data S
 ### Submission by Connor Lenio. Email: cojamalo@gmail.com
 Completion Date: May 7, 2017
 
-### Please visit https://cojamalo.github.io/DATA-ADV-R-Future500-Plots/Future-500.html to properly view the project html file.
+### Please visit https://cojamalo.github.io/DATA-ADV-R-Mach-Util-Lists/Machine-Util-Lists.html to properly view the project html file.
 
 
 ### Introduction to the Data
